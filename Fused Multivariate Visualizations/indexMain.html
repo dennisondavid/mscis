@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+<title> Fused Multivariate Visualizations </title>
+  <link rel="stylesheet" href="jquery-ui.css">
+
+  <defs>
+      <linearGradient id="linear-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" style="stop-color:rgb(56,121,217);stop-opacity:1" />
+        <stop offset="100%" style="stop-color:rgb(138,192,7);stop-opacity:1" />
+      </linearGradient>
+    </defs>
+
+  <style>
+
+  
+ 
+ 
+
+#employee_table tr{background-color: #fff;}  
+
+
+#employee_tablech tr{background-color: #fff;}
+
+#cont { width:10000px; height:10500px;}  
+#draggable { width:750px; height:3000px; padding: 2.0em;  }
+#draggablech { width:1850px; height:700px; padding: 2.0em; }
+#draggablechs { width:900px; height:900px; padding: 2.0em;}
+#draggablefreq { width:1000px; height:700px; padding: 2.0em;}
+.hubs{ width:60px; height:60px; padding: 1.0em; position:absolute;
+   top: 500px;
+    right: 500px;
+  display:inline-block;}
+#close {
+    float:right;
+    display:inline-block;
+    padding:2px 5px;
+    background:#ccc;
+}
+[id*='close']{
+    float:right;
+    display:inline-block;
+    padding:2px 5px;
+    background:#ccc;
+}
+#close:hover {
+    float:right;
+    display:inline-block;
+    padding:2px 5px;
+    background:#ccc;
+    color:#fff;
+}
+
+ .chart rect {
+   stroke: white;
+   fill: steelblue;
+ }
+
+#container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+
+  .draggable {
+    /*padding:12px;*/
+    position: absolute;
+    border: 1px solid #f5f5f5;
+  }
+
+  .draggable .title {
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 1px solid #f5f5f5;
+  }
+
+  .draggable .title:hover {
+    cursor: move;
+  }
+
+ [class*='lines'] {
+         border:3px solid #051;
+         opacity: 0.5;
+         z-index:1;
+         border-radius:100%;
+         pointer-events:none;
+      }
+
+  [class*='grp']{
+         border:3px solid #ffa500;
+         opacity: 0.5;
+         z-index:1;
+         border-radius:100%;
+         pointer-events:none;
+      }
+
+
+    [class*='grup']{
+         border:3px solid #FF00FF;
+         opacity: 0.5;
+         z-index:1;
+         border-radius:100%;
+         pointer-events:none;
+      }
+
+
+#tbl tr:hover td {background-color: #d3d3d3;}
+/* #tbl tr:mousedown td {background-color:#4682b4;}  */
+
+  </style>
+
+
+
+  <script src="jquery.js"></script>
+  <script src="jquery-ui.js"></script>
+  <script src="jsplumb.js"></script>
+  <script src="jqSimpleConnect.js"></script>
+  <script src="jquery.connect.js"></script>
+  <script src="jquery.connections.js"></script>
+
+<script type="text/javascript" src="http://creativecouple.github.com/jquery-timing/jquery-timing.min.js"></script>
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js" charset="utf-8"></script>
+
+   <script src="https://ariutta.github.io/svg-pan-zoom/dist/svg-pan-zoom.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.6.6/svg.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.connectable.js/2.0.1/svg.connectable.js"></script>
+  <script src="raphael.min.js"></script>
+  <script src="sorttable.js"></script>
+  <script src="jquery.tablesorter.js"></script>
+  <script src="fisheye.js"></script>
+  <script src="svg-pan-zoom.js"></script>
+
+  <script>
+  $( function() {
+    
+ $( "#draggable" ).draggable({ containment: "#cont", scroll: false , snap: false});
+$( "#draggablech" ).draggable({ containment: "#cont", scroll: false , snap: false });
+$( "#draggablechs" ).draggable({ containment: "#cont", scroll: false , snap: false });
+$( "#draggablefreq" ).draggable({ containment: "#cont", scroll: false , snap: false });
+
+  } );
+  </script>
+
+
+
+
+  
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+ </head>
+ <body>
+
+
+
+  <div class="container">
+   <div class="load_data">
+    
+    <h1 align="center">Fused Multivariate Visualizations </h1>
+    <br />
+
+
+
+    <div align="center">
+     <button type="button" name="load_data" id="load_data" class="btn btn-info">Load Data</button>
+     
+
+
+<input name="scatterButton"  type="button" value="Scatterplot"  onclick="document.getElementById('draggablechs').style.display='block'" >
+
+<input name="connectButton"  type="button" value="Show/Hide Connectors"  id="connectors" >
+
+<input name="groupButton"  type="button" value="Group current selection"  id="groupup" ">
+
+<input name="linkButton"  type="button" value="Link each current selection"  id="linkup" ">
+
+    </div>
+    <br />
+
+
+<div id="cont">
+
+
+
+<div id="draggable" class="ui-widget-content">
+    <div id="employee_table">
+
+<script type="text/javascript">
+  
+
+          d3.select("#tbl").selectAll("tr")
+            .style('background-color', '#fff');
+
+</script>
+
+    </div>
+
+ </div>
+
+
+
+
+<div id="draggablech" class="ui-widget-content" style="display:none">
+
+  <span id='close' onclick="document.getElementById('draggablech').style.display='none'">x</span>
+ <script type="text/javascript" src="chart/employeeBarGraph.js"></script>
+
+
+
+
+ <script>
+
+
+
+function  getId(element) {                            //use element.id instead of this.id in this block. Incase you forgot
+    
+
+var numb= element.parentNode.rowIndex + iter;
+var hed= element.cellIndex + iter;
+
+
+
+
+
+console.log(element.id);
+
+
+
+if(element.parentNode.rowIndex==0 && element.cellIndex==6)
+{createData();document.getElementById('draggablech').style.display='block';}
+
+if(element.parentNode.rowIndex==0 && element.cellIndex==3)
+{updateData();document.getElementById('draggablech').style.display='block';}
+
+
+
+
+element.flag= !element.flag;
+
+console.log(element.flag);
+
+if(element.flag == true)
+
+{
+
+
+
+
+var numbers = (element.id).match(/\d+/g).map(Number);
+var first= numbers[0];
+console.log(first);
+
+
+
+          d3.select("#tbl").select("#tr"+first)
+            .style('background-color', 'steelblue');
+
+    
+
+d3.select("#draggablech");
+svg.select("#bar"+first)
+    .transition().duration(300)
+    .delay( function(d,i) { return i * 200; })
+    .style("fill", function(d,i) { return 'rgb( 200, 0, 0)'});
+
+
+
+
+d3.select("#draggablechs")
+
+d3.select("#cir"+first)
+    .transition().duration(300)
+    .delay( function(d,i) { return i * 200; })
+    .style("fill", function(d,i) { return 'rgb( 200, 0, 0)'});
+
+
+           $().connections( { from: "#tr"+first, to: "#bar"+first ,'class': 'lines'+first, borderClasses: {
+          top: 'connection-border-top',
+          right: 'connection-border-right',
+          bottom: 'connection-border-bottom',
+          left: 'connection-border-left'
+      }});
+
+            $().connections({from: "#tr"+first ,to: "#cir"+first,  'class': 'lines'+first, borderClasses: {
+          top: 'connection-border-top',
+          right: 'connection-border-right',
+          bottom: 'connection-border-bottom',
+          left: 'connection-border-left'
+      }});
+
+             $().connections({from:  "#bar"+first ,to: "#cir"+first ,  'class': 'lines'+first, borderClasses: {
+          top: 'connection-border-top',
+          right: 'connection-border-right',
+          bottom: 'connection-border-bottom',
+          left: 'connection-border-left'
+      }});
+
+  $.repeat().add('connection').each($).connections('update').wait(0);
+
+
+
+
+document.getElementById("bar"+first).classList.add("group") ;
+document.getElementById("cir"+first).classList.add("group") ;
+document.getElementById("tr"+first).classList.add("group") ;
+
+
+
+
+
+}
+
+if(element.flag == false)
+
+{
+
+
+
+
+var numbers = (element.id).match(/\d+/g).map(Number);
+var first= numbers[0];
+console.log(first);
+
+
+
+          d3.select("#tbl").select("#tr"+first)
+            .style('background-color', '#fff');
+
+    
+
+d3.select("#draggablech");
+svg.select("#bar"+first)
+    .transition().duration(100)
+    .delay( function(d,i) { return i * 50; })
+    .style("fill", function(d,i) { return 'rgb( 0, 0, 200)'});
+
+
+
+
+d3.select("#draggablechs")
+
+d3.select("#cir"+first)
+    .transition().duration(100)
+    .delay( function(d,i) { return i * 50; })
+    .style("fill", function(d,i) { return 'rgb( 0, 0, 200)'});
+
+
+
+
+     $('.lines'+first).connections('remove');
+
+}
+
+
+}
+
+
+
+</script>
+
+
+
+
+    </div>
+
+ <div id="draggablechs" class="ui-widget-content" style="display:none">
+
+  <span id='close' onclick="document.getElementById('draggablechs').style.display='none'">x</span>
+ <script type="text/javascript" src="chart/scatterplot.js"></script>
+    </div>
+   
+
+
+  </div>
+</div>
+
+
+
+
+<div id="draggablefreq" class="ui-widget-content" style="display:none">
+<span id='close' onclick="document.getElementById('draggablefreq').style.display='none'">x</span>
+
+<select id="list" onchange="runfreq()">
+  <option value = "op1">Name</option>
+  <option value = "op2">Gender</option>
+  <option value = "op3">Designation</option>
+  <option value = "op4">Age</option>
+  <option value = "op5">Salary</option>
+</select>
+
+
+
+    <script type="text/javascript" src="freq.js"></script>
+
+</div>
+
+
+
+<script type="text/javascript">
+  
+var inc = 1;
+
+$(document).ready(function() {
+  jQuery("#groupup").click(function() {
+
+
+  
+
+$("#cont").append('<div id="hub'+inc+'" class= "hubs ui-widget-content" ><span id="close'+inc+'">x</span></div>'); 
+
+  $( ".hubs" ).draggable({ containment: "#cont", scroll: false , snap: false });
+
+  $( '#hub'+inc ).append( inc );
+
+
+jQuery("[id^=close]").click(function() {
+
+var nu = (this.id).match(/\d+/g).map(Number);
+
+document.getElementById('hub'+(nu)).style.display="none";
+
+});
+
+    
+
+     $().connections({from:"#hub"+inc ,to: ".group" ,  'class': 'grp'+inc , borderClasses: {
+          top: 'connection-border-top',
+          right: 'connection-border-right',
+          bottom: 'connection-border-bottom',
+          left: 'connection-border-left'
+      }});
+
+  $.repeat().add('connection').each($).connections('update').wait(0);
+
+
+
+var list=document.getElementsByClassName("group");
+
+
+for (var i = list.length - 1; i >= 0; i--) {
+
+ list[0].classList.remove("group");
+  
+}  
+ 
+
+
+
+
+
+ 
+
+
+var vis = true;
+
+jQuery(".hubs").click(function() {
+
+
+var numbers = (this.id).match(/\d+/g).map(Number);
+var first= numbers[0];
+
+if (vis == true)
+{
+
+
+var sel = document.getElementsByClassName('grp'+first), i;
+
+for (var i = 0; i < sel.length; i ++) {
+    sel[i].style.display = "none";
+}
+
+
+}
+
+
+if (vis == false)
+{
+
+
+
+var sel = document.getElementsByClassName('grp'+first), i;
+
+for (var i = 0; i < sel.length; i ++) {
+    sel[i].style.display = 'visible';
+}
+
+}
+
+ 
+
+});
+
+
+ 
+inc = inc+1;
+});
+
+ 
+
+
+
+ jQuery("#linkup").click(function() {
+
+
+
+
+
+$("#cont").append('<div id="huba'+inc+'" class= "hubs ui-widget-content" ><span id="closea'+inc+'">x</span></div>');
+$("#cont").append('<div id="hubb'+inc+'" class= "hubs ui-widget-content" ><span id="closeb'+inc+'">x</span></div>');
+$("#cont").append('<div id="hubc'+inc+'" class= "hubs ui-widget-content" ><span id="closec'+inc+'">x</span></div>');
+
+
+  $( ".hubs" ).draggable({ containment: "#cont", scroll: false , snap: false });
+
+  
+  $( '#huba'+inc ).append( 'a'+inc );
+  $( '#hubb'+inc ).append( 'b'+inc );
+  $( '#hubc'+inc ).append( 'c'+inc );
+
+
+
+
+jQuery("[id^=closea]").click(function() {
+
+var nu = (this.id).match(/\d+/g).map(Number);
+
+document.getElementById('huba'+(nu)).style.display="none";
+
+});
+
+
+jQuery("[id^=closeb]").click(function() {
+
+var nu = (this.id).match(/\d+/g).map(Number);
+
+document.getElementById('hubb'+(nu)).style.display="none";
+
+});
+
+
+jQuery("[id^=closec]").click(function() {
+
+var nu = (this.id).match(/\d+/g).map(Number);
+
+document.getElementById('hubc'+(nu)).style.display="none";
+
+});
+
+
+
+
+var element = document.getElementsByClassName("group");
+
+for (var i = element.length - 1; i >= 0; i--) {
+
+if (element[i].id.includes('tr')) { 
+element[i].classList.add("grouptr") ;
+}
+
+if (element[i].id.includes('bar')) { 
+element[i].classList.add("groupbar") ;
+}
+
+if (element[i].id.includes('cir')) { 
+element[i].classList.add("groupcir") ;
+}
+
+}
+    
+
+     $().connections({from:"#huba"+inc ,to: ".grouptr" ,  'class': 'grup'+inc , borderClasses: {
+          top: 'connection-border-top',
+          right: 'connection-border-right',
+          bottom: 'connection-border-bottom',
+          left: 'connection-border-left'
+      }});
+
+
+
+     $().connections({from:"#huba"+inc ,to: ".groupbar" ,  'class': 'grup'+inc , borderClasses: {
+          top: 'connection-border-top',
+          right: 'connection-border-right',
+          bottom: 'connection-border-bottom',
+          left: 'connection-border-left'
+      }});
+
+
+     $().connections({from:"#hubb"+inc ,to: ".groupbar" ,  'class': 'grup'+inc , borderClasses: {
+          top: 'connection-border-top',
+          right: 'connection-border-right',
+          bottom: 'connection-border-bottom',
+          left: 'connection-border-left'
+      }});
+
+
+     $().connections({from:"#hubb"+inc ,to: ".groupcir" ,  'class': 'grup'+inc , borderClasses: {
+          top: 'connection-border-top',
+          right: 'connection-border-right',
+          bottom: 'connection-border-bottom',
+          left: 'connection-border-left'
+      }});
+
+
+     $().connections({from:"#hubc"+inc ,to: ".groupcir" ,  'class': 'grup'+inc , borderClasses: {
+          top: 'connection-border-top',
+          right: 'connection-border-right',
+          bottom: 'connection-border-bottom',
+          left: 'connection-border-left'
+      }});
+
+
+     $().connections({from:"#hubc"+inc ,to: ".grouptr" ,  'class': 'grup'+inc , borderClasses: {
+          top: 'connection-border-top',
+          right: 'connection-border-right',
+          bottom: 'connection-border-bottom',
+          left: 'connection-border-left'
+      }});
+
+
+
+
+
+
+  $.repeat().add('connection').each($).connections('update').wait(0);
+
+
+
+var list=document.getElementsByClassName("group");
+
+
+for (var i = list.length - 1; i >= 0; i--) {
+
+ list[0].classList.remove("group");
+
+  
+}  
+ 
+
+var list1=document.getElementsByClassName("grouptr");
+var list2=document.getElementsByClassName("groupbar");
+var list3=document.getElementsByClassName("groupcir");
+
+for (var i = list1.length - 1; i >= 0; i--) {
+
+ list1[0].classList.remove("grouptr");
+list2[0].classList.remove("groupbar");
+list3[0].classList.remove("groupcir");
+  
+}  
+ 
+
+
+
+
+
+
+ 
+
+ 
+
+
+var vis = true;
+
+jQuery(".hubs").click(function() {
+
+
+var numbers = (this.id).match(/\d+/g).map(Number);
+var first= numbers[0];
+
+if (vis == true)
+{
+
+
+var sel = document.getElementsByClassName('grp'+first), i;
+
+for (var i = 0; i < sel.length; i ++) {
+    sel[i].style.display = "none";
+}
+
+
+}
+
+
+if (vis == false)
+{
+
+
+
+var sel = document.getElementsByClassName('grp'+first), i;
+
+for (var i = 0; i < sel.length; i ++) {
+    sel[i].style.display = 'visible';
+}
+
+}
+
+ 
+
+});
+
+
+ 
+inc = inc+1;
+
+
+});
+
+
+});
+</script>
+
+</div>
+
+
+
+
+
+<script type='text/javascript'>
+    
+
+ 
+ var visible=false;
+
+
+jQuery("#connectors").click(function() {
+
+
+
+var connection= [];        
+var current=1;        
+
+  $(function(){
+    onPageLoad();
+});
+         
+
+function onPageLoad(){
+
+
+               var conn1 = jqSimpleConnect.connect("#draggable", "#draggablech" ,{radius: 10, color: '#5e3c58' , anchorA: 'horizontal', anchorB: 'vertical'});
+            
+      
+
+        
+                var conn2 = jqSimpleConnect.connect("#draggable", "#draggablechs" ,{radius: 10, color: '#5e3c58', anchorA: 'vertical', anchorB: 'horizontal'});
+            
+      
+
+        
+                var conn3 = jqSimpleConnect.connect("#draggablech", "#draggablechs" , {radius: 10, color: '#5e3c58', anchorA: 'vertical', anchorB: 'horizontal'});
+            
+          
+         
+       
+                    
+        // Each second, move 'Div E' and repaint the connection.
+      
+        setInterval(function() {
+                         jqSimpleConnect.repaintConnection(conn1);
+                          jqSimpleConnect.repaintConnection(conn2);             
+            jqSimpleConnect.repaintConnection(conn3);
+
+
+           
+            connection.forEach(function(connections){
+          connections.calculate();
+        });
+      
+         
+        }, 1);
+                  
+}
+
+
+
+console.log(visible);
+
+
+ 
+if(visible==false)
+        {
+
+
+
+
+visible=true;
+         }
+
+
+
+
+           else {
+                jqSimpleConnect.removeAll();
+
+              
+               visible=false;
+             
+            }
+      
+
+
+
+
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+ 
+ </body>
+
+
+
+</html>
